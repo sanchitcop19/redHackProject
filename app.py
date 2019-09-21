@@ -40,8 +40,11 @@ def process_address():
     from closest import closest_k
     closest_neighbors = closest_k(location)
     scores = [store[neighbor]["score"] for neighbor in closest_neighbors]
-
-    # addresses in those neighboring counties
+    # query address for price
+    # query all closest_neighbors for price
+    result = {
+        address:
+    }
     price = 500
     return jsonify([address, price, score, county, state]*10)
 
