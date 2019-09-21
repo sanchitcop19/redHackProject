@@ -63,6 +63,7 @@ def process(content):
         store[county]["score"] /= max_score
         store[county]["score"] *= 100
 
+
     with open("scored_output.json", "w") as file:
         json.dump(store, file, indent=4)
 

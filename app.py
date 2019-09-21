@@ -47,7 +47,9 @@ def process_address():
 
     # find score for county
     score = store[county + " , " + state]["score"]
-    # find x neighboring counties
+    # find x neighboring counties, use the dmatrix
+
+
 
     # addresses in those neighboring counties
     return jsonify({'result': [county, state, address, score]})
