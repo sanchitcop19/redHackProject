@@ -16,9 +16,11 @@ import json
 
 app = Flask(__name__)
 app.config.from_object('config')
-store = None
+store, dmatrix = None, None
 with open("scored_output.json") as file:
     store = json.load(file)
+with open("dmatrixca.json") as file:
+    dmatrix = json.load(file)
 
 @app.route('/')
 def home():
@@ -30,27 +32,14 @@ def process_address():
     county = data['county']
     state = data['state']
     address = data['address']
-    """
-    import googlemaps
-    google_maps = googlemaps.Client(key='AIzaSyA3kdX2kwoRQpkmui8GtloGvGQB-rn1tMU')
-    location = google_maps.geocode(address)
-
-    # Loop through the first dictionary within `location` and find the address component that contains the 'administrative_area_level_2' designator, which is the county level
-    target_string = 'administrative_area_level_2'
-    for item in location[0]['address_components']:
-        if target_string in item['types']:  # Match target_string
-            county_name = item['long_name']  # Or 'short_name'
-            break  # Break out once county is located
-        else:
-            # Some locations might not contain the expected information
-            pass
-    """
 
     # find score for county
-    score = store[county + " , " + state]["score"]
+    location = county + " , " + state
+    score = store[location]["score"]
     # find x neighboring counties, use the dmatrix
-
-
+    from closest import closest_k
+    closest_neighbors = closest_k(location)
+    scores = [store[neighbor]["score"] for neighbor in closest_neighbors]
 
     # addresses in those neighboring counties
     price = 500
