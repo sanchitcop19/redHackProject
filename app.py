@@ -24,11 +24,12 @@ with open("scored_output.json") as file:
 def home():
     return render_template('pages/placeholder.home.html')
 
-@app.route('/address', methods = ["GET", "POST"])
+@app.route('/address', methods = ["POST"])
 def process_address():
-    county = request.form['county']
-    state = request.form['state']
-    address = request.form['address']
+
+    county = request.data['county']
+    state = request.data['state']
+    address = request.data['address']
     """
     import googlemaps
     google_maps = googlemaps.Client(key='AIzaSyA3kdX2kwoRQpkmui8GtloGvGQB-rn1tMU')
@@ -52,7 +53,7 @@ def process_address():
 
 
     # addresses in those neighboring counties
-    return jsonify({'result': [county, state, address, score]})
+    return jsonify({[county, state, address, score]})
 
 # Error handlers.
 
@@ -85,7 +86,7 @@ if not app.debug:
 if __name__ == '__main__':
     import os
     print(os.getcwd())
-    app.run()
+    app.run(port = 5002)
 
 # Or specify port manually:
 '''
