@@ -24,7 +24,7 @@ with open("scored_output.json") as file:
 def home():
     return render_template('pages/placeholder.home.html')
 
-@app.route('/address', methods = ["POST"])
+@app.route('/address', methods = ["GET", "POST"])
 def process_address():
     county = request.form['county']
     state = request.form['state']
