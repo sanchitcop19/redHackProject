@@ -53,7 +53,7 @@ def process_address():
 
 
     # addresses in those neighboring counties
-    return jsonify({[county, state, address, score]})
+    return jsonify([county, state, address, score])
 
 # Error handlers.
 
