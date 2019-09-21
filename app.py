@@ -26,10 +26,10 @@ def home():
 
 @app.route('/address', methods = ["POST"])
 def process_address():
-
-    county = request.data['county']
-    state = request.data['state']
-    address = request.data['address']
+    data = json.loads(request.data)
+    county = data['county']
+    state = data['state']
+    address = data['address']
     """
     import googlemaps
     google_maps = googlemaps.Client(key='AIzaSyA3kdX2kwoRQpkmui8GtloGvGQB-rn1tMU')
