@@ -53,7 +53,8 @@ def process_address():
 
 
     # addresses in those neighboring counties
-    return jsonify([county, state, address, score])
+    price = 500
+    return jsonify([address, price, score, county, state]*10)
 
 # Error handlers.
 
