@@ -46,7 +46,7 @@ def process_address():
     """
 
     # find score for county
-    score = store[county + " , " + state]
+    score = store[county + " , " + state]["score"]
     # find x neighboring counties
 
     # addresses in those neighboring counties
