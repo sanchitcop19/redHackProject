@@ -8,6 +8,7 @@ import logging
 from logging import Formatter, FileHandler
 from forms import *
 import os
+import json
 
 #----------------------------------------------------------------------------#
 # App Config.
@@ -15,40 +16,20 @@ import os
 
 app = Flask(__name__)
 app.config.from_object('config')
-#db = SQLAlchemy(app)
-
-# Automatically tear down SQLAlchemy.
-'''
-@app.teardown_request
-def shutdown_session(exception=None):
-    db_session.remove()
-'''
-
-# Login required decorator.
-'''
-def login_required(test):
-    @wraps(test)
-    def wrap(*args, **kwargs):
-        if 'logged_in' in session:
-            return test(*args, **kwargs)
-        else:
-            flash('You need to login first.')
-            return redirect(url_for('login'))
-    return wrap
-'''
-#----------------------------------------------------------------------------#
-# Controllers.
-#----------------------------------------------------------------------------#
-
-
+store = None
+with open("scored_output.json") as file:
+    store = json.load(file)
 
 @app.route('/')
 def home():
     return render_template('pages/placeholder.home.html')
 
-@app.route('/address/<address>')
-def process_address(address):
-
+@app.route('/address', methods = ["POST"])
+def process_address():
+    county = request.form['county']
+    state = request.form['state']
+    address = request.form['address']
+    """
     import googlemaps
     google_maps = googlemaps.Client(key='AIzaSyA3kdX2kwoRQpkmui8GtloGvGQB-rn1tMU')
     location = google_maps.geocode(address)
@@ -62,11 +43,14 @@ def process_address(address):
         else:
             # Some locations might not contain the expected information
             pass
+    """
+
     # find score for county
+    score = store[county + " , " + state]
     # find x neighboring counties
 
     # addresses in those neighboring counties
-    return jsonify([county_name])
+    return jsonify([county, state, address, score])
 
 # Error handlers.
 

@@ -47,12 +47,25 @@ def process(content):
                 longest_duration[disaster] = {"duration": county_data[disaster]["average_duration"], "county": county}
     for county in store:
         county_data = store[county]["disaster"]
+        num_scores = 0
+        current_score = 0
         for disaster in ["Fire", "Hurricane", "Tornado", "Flood", "Earthquake", "Snow"]:
             county_data[disaster+"_score"] = score(county, disaster)
+            if county_data[disaster + "_score"]:
+                current_score += county_data[disaster+"_score"]
+                num_scores += 1
             if county_data[disaster+"_score"]> max_scores[disaster]["score"]:
                 max_scores[disaster] = {"county": county, "score": county_data[disaster+"_score"]}
-    
-    
+        store[county]["score"] = (current_score / (num_scores if num_scores else 1))
+
+    max_score = max([store[county]["score"] for county in store])
+    for county in store:
+        store[county]["score"] /= max_score
+        store[county]["score"] *= 100
+
+    with open("scored_output.json", "w") as file:
+        json.dump(store, file, indent=4)
+
 
 
     
