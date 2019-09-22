@@ -95,7 +95,7 @@ def process_address():
             "score": _score,
             "price": prices[street] if street in prices else 0
         })
-    final = jsonify({"list": final})
+    final = jsonify(final)
     return final
 
 # Error handlers.
