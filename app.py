@@ -142,12 +142,9 @@ def list():
     info = request.get_json()
     return render_template('list.html', info=info)
 
-
-@app.route('/address/', methods=["GET", "POST"])
-def process_address():
-    address = request.args["address"]
+def break_address(address):
     query = "https://maps.googleapis.com/maps/api/geocode/json?address=" + \
-        address + "&key=AIzaSyB0gbwLd0woievTa-_BwG9ZylFpXX27BUg"
+            address + "&key=AIzaSyB0gbwLd0woievTa-_BwG9ZylFpXX27BUg"
     response = requests.get(query).json()
     for data in response["results"][0]["address_components"]:
         if 'administrative_area_level_2' in data["types"]:
@@ -159,7 +156,15 @@ def process_address():
     formatted_address = response['results'][0]['formatted_address']
     latitude = response["results"][0]["geometry"]["location"]["lat"]
     longitude = response["results"][0]["geometry"]["location"]["lng"]
-    # find score for county
+    return county, state, city, formatted_address, latitude, longitude
+
+@app.route('/address/', methods=["GET", "POST"])
+def process_address():
+    address = request.args["address"]
+
+
+    county, state, city, formatted_address, latitude, longitude = break_address(address)
+
     location = county[:county.index(' County')] + " , " + state
     main_score = store[location]["score"]
     price = get_address_price(address, city + state)
@@ -198,9 +203,12 @@ def process_address():
             cn[i] = n.replace(" ", "")
         cn = set(cn)
         for item, address in content.items():
+
+
             if item.replace(" ", "") not in cn:
                 continue
             try:
+
                 old = address
                 address = address.split(',')
                 city_state = address[1] + " CA"
@@ -211,6 +219,7 @@ def process_address():
             except:
                 import random
                 prices[old] = (random.randint(200000, 600000))
+    anarghya = {}
     for neighbor, _score in ordered_scores.items():
         if content:
             street = content[neighbor] if neighbor in content else ""
@@ -218,13 +227,15 @@ def process_address():
             street = address
         price = round(prices[street]) if street in prices and prices else 0
         if price and street:
+            county, state, city, formatted_address, latitude, longitude = break_address(street)
+            anarghya[street] = [latitude, longitude, score]
             final.append({
                 "street": street,
                 "score": round(_score, 2),
                 "price": locale.currency(price, grouping=True)
             })
 
-    return render_template('list.html', info = final)
+    return render_template('list.html', info = final, anarghya = anarghya)
 
 
 # Error handlers.
