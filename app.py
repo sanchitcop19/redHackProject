@@ -65,10 +65,12 @@ def process_address():
         "score": main_score,
         "price": price[1]
     })
+    content = None
+    prices = {}
     if state == "CA":
         with open("addresses.json") as file:
             content = json.load(file)
-        prices = {}
+
         import copy
         cn = copy.deepcopy(closest_neighbors)
         for i, n in enumerate(cn):
@@ -89,11 +91,14 @@ def process_address():
                 import random
                 prices[old] = (random.randint(200000, 600000))
     for neighbor, _score in ordered_scores.items():
-        street = content[neighbor] if neighbor in content else ""
+        if content:
+            street = content[neighbor] if neighbor in content else ""
+        else:
+            street = address
         final.append({
             "street": street,
             "score": _score,
-            "price": prices[street] if street in prices else 0
+            "price": prices[street] if street in prices and prices else 0
         })
     final = jsonify(final)
     return final
