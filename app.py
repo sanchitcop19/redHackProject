@@ -9,6 +9,7 @@ from logging import Formatter, FileHandler
 import os
 import requests 
 import json
+from datetime import datetime
 
 #----------------------------------------------------------------------------#
 # App Config.
@@ -22,26 +23,67 @@ with open("scored_output.json") as file:
 with open("dmatrixca.json") as file:
     dmatrix = json.load(file)
 
-@app.route('/')
-def home():
-    return render_template('pages/placeholder.home.html')
+def process_date(date):
+    print(date)
+    date = datetime.strptime(date[:11], 'YYYY-MM-DD')
+    print(date)
 
-@app.route('/earthquake', methods=["POST"])
-def determine_earthquake():
-    data = json.loads(request.data)
-    
-    longitude = float(data["longitude"])
-    latitude = float(data["latitude"])
+def get_earthquake_data(latitude, longitude):
+    longitude = float(longitude)
+    latitude = float(latitude)
     min_latitude =  -0.45+ latitude
     max_latitude = 0.45+ latitude
     min_longitude = -.5 + longitude
     max_longitude = .5+longitude
-    response = requests.get("https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=1980-01-01&endtime=2000-01-02&maxlatitude={}&minlatitude={}&maxlongitude={}&minlongitude={}&minmagnitude=3".format(max_latitude, min_latitude, max_longitude, min_longitude))
-    print("https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=1980-01-01&endtime=2000-01-02&maxlatitude={}&minlatitude={}&maxlongitude={}&minlongitude={}&minmagnitude=3".format(max_latitude, min_latitude, max_longitude, min_longitude))
-    
-    response = response.json()
+    response = requests.get("https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&maxlatitude={}&minlatitude={}&maxlongitude={}&minlongitude={}&starttime=1950-01-01&minmagnitude=4".format(max_latitude, min_latitude, max_longitude, min_longitude))
+    print("https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&maxlatitude={}&minlatitude={}&maxlongitude={}&minlongitude={}&minmagnitude=4&startd=1950-01-01".format(max_latitude, min_latitude, max_longitude, min_longitude))
+    print(response.json())
+    return response.json()
+@app.route('/')
+def home():
+    return render_template('pages/placeholder.home.html')
+
+
+@app.route('/chart_data', methods=["GET"])
+def chart():
+    latitude = request.args.get('latitude')
+    longitude = request.args.get('longitude')
+    earthquake_data = get_earthquake_data(latitude, longitude)
+    data_map = {"1960": 0, "1970": 0, "1980": 0, "1990": 0, "2000": 0, "2010": 0, "2020": 0}
+    for data in earthquake_data["features"]:
+        
+        data = data["properties"]
+        try:
+            time = datetime.fromtimestamp(data["time"]/1000)
+        except:
+            print("ERROR")
+            continue
+        print(time)
+        if datetime(1960,1,1)  > time:
+            data_map["1960"]+=1
+        elif datetime(1970,1,1) > time:
+            data_map["1970"]+=1
+        elif datetime(1980,1,1) > time:
+            data_map["1980"]+=1
+        elif datetime(1990,1,1) > time:
+            data_map["1990"]+=1
+        elif datetime(2000,1,1) > time:
+            data_map["2000"]+=1
+        elif datetime(2010,1,1) < time:
+            data_map["2010"]+=1
+        else:
+            data_map["2020"]+=1
+    return render_template("earthquake.html", dates=data_map)
+
+
+
+
+@app.route('/earthquake', methods=["POST"])
+def determine_earthquake():
+    data = json.loads(request.data)
+    earthquake_data = get_earthquake_data(data['latitude'], data['longitude'])
     x_vector = [0]*5
-    for data in response["features"]:
+    for data in earthquake_data["features"]:
         data = data["properties"]
         if not data['mag']:
             continue
