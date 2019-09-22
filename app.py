@@ -2,6 +2,10 @@
 # Imports
 #----------------------------------------------------------------------------#
 
+from property import get_address_price
+from datetime import datetime
+import json
+import requests
 from flask import Flask, render_template, request, jsonify, url_for, redirect, flash
 from forms import SearchForm
 import logging
@@ -9,10 +13,6 @@ from logging import Formatter, FileHandler
 import os
 import locale
 locale.setlocale(locale.LC_ALL, '')
-import requests
-import json
-from datetime import datetime
-from property import get_address_price
 
 #----------------------------------------------------------------------------#
 # App Config.
@@ -142,6 +142,7 @@ def list():
     info = request.get_json()
     return render_template('list.html', info=info)
 
+
 def break_address(address):
     query = "https://maps.googleapis.com/maps/api/geocode/json?address=" + \
             address + "&key=AIzaSyB0gbwLd0woievTa-_BwG9ZylFpXX27BUg"
@@ -158,12 +159,13 @@ def break_address(address):
     longitude = response["results"][0]["geometry"]["location"]["lng"]
     return county, state, city, formatted_address, latitude, longitude
 
+
 @app.route('/address/', methods=["GET", "POST"])
 def process_address():
     address = request.args["address"]
 
-
-    county, state, city, formatted_address, latitude, longitude = break_address(address)
+    county, state, city, formatted_address, latitude, longitude = break_address(
+        address)
 
     location = county[:county.index(' County')] + " , " + state
     main_score = store[location]["score"]
@@ -204,7 +206,6 @@ def process_address():
         cn = set(cn)
         for item, address in content.items():
 
-
             if item.replace(" ", "") not in cn:
                 continue
             try:
@@ -227,15 +228,16 @@ def process_address():
             street = address
         price = round(prices[street]) if street in prices and prices else 0
         if price and street:
-            county, state, city, formatted_address, latitude, longitude = break_address(street)
-            anarghya[street] = [latitude, longitude, score]
+            county, state, city, formatted_address, latitude, longitude = break_address(
+                street)
+            anarghya[street] = [latitude, longitude, _score]
             final.append({
                 "street": street,
                 "score": round(_score, 2),
                 "price": locale.currency(price, grouping=True)
             })
 
-    return render_template('list.html', info = final, anarghya = anarghya)
+    return render_template('list.html', info=final, anarghya=anarghya)
 
 
 # Error handlers.

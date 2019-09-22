@@ -44,13 +44,18 @@
         </tr>
       </thead>
       <tbody>
-        {% for item in info %}
-        {% if loop.index == 1 %}
+        {% for item in info %} {% if loop.index == 1 %}
         <tr class="bg-success">
-        {% else %}
-            <tr>
-            {% endif %}
-            <td><a href="{{ url_for('home') }}" class="street_links">{{ item["street"] }}</a></td>
+          {% else %}
+        </tr>
+
+        <tr>
+          {% endif %}
+          <td>
+            <a href="{{ url_for('home') }}" class="street_links">{{
+              item["street"]
+            }}</a>
+          </td>
           <td>{{ item["price"] }}</td>
           <td>{{ item["score"] }}</td>
         </tr>
@@ -60,46 +65,35 @@
     <script>
       // Initialize and add the map
       function initMap() {
-        // The location of Uluru
+        // The location of Cali
         var cali = { lat: 36.7783, lng: -119.4179 };
-        // The map, centered at Uluru
+        // The map, centered at Cali
         var map = new google.maps.Map(document.getElementById("map"), {
-          zoom: 5,
+          zoom: 6,
           center: cali
         });
-        // The marker, positioned at Uluru
-        var marker = new google.maps.Marker({
-          position: cali,
-          map: map,
-          icon: {
-            url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+        var data={{ anarghya|safe }};
+        var keys=Object.keys(data);
+        keys.forEach(function(key){
+          var coordinate= {lat:data[key][0],lng:data[key][1]};
+          var score=data[key][2];
+          if(score<=20){
+            var ico={
+              url:"http://maps.google.com/mapfiles/ms/icons/green-dot.png"
+            };
+          }else{
+            var ico={
+              url:"http://maps.google.com/mapfiles/ms/icons/red-dot.png"
+            };
           }
+          var marker= new google.maps.Marker({
+            position: coordinate,
+            map: map,
+            icon: ico
+          });
+          marker.addListener("click", function() {
+          alert(key);
         });
-
-        var marker1 = new google.maps.Marker({
-          position: { lat: 38.9072, lng: -120.0369 },
-          map: map,
-          icon: {
-            url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
-          }
-        });
-
-        var marker2 = new google.maps.Marker({
-          position: { lat: 40.7128, lng: -122.006 },
-          map: map,
-          icon: {
-            url: "http://maps.google.com/mapfiles/ms/icons/purple-dot.png"
-          }
-        });
-
-        marker.addListener("click", function() {
-          alert("Hello1!");
-        });
-        marker1.addListener("click", function() {
-          alert("Hello2!");
-        });
-        marker2.addListener("click", function() {
-          alert("Hello3!");
         });
       }
     </script>
