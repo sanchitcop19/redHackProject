@@ -12,6 +12,7 @@ import logging
 from logging import Formatter, FileHandler
 import os
 import locale
+import random
 locale.setlocale(locale.LC_ALL, '')
 
 #----------------------------------------------------------------------------#
@@ -218,7 +219,6 @@ def process_address():
                 prices[old] = (result[1] if result[0] != 'error' else (
                     random.randint(200000, 600000)))
             except:
-                import random
                 prices[old] = (random.randint(200000, 600000))
     anarghya = {}
     for neighbor, _score in ordered_scores.items():
