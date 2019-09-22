@@ -2,8 +2,7 @@
 # Imports
 #----------------------------------------------------------------------------#
 
-from flask import Flask, render_template, request, jsonify, url_for, redirect, make_response
-# from flask.ext.sqlalchemy import SQLAlchemy
+from flask import Flask, render_template, request, jsonify, url_for, redirect
 from forms import SearchForm
 import logging
 from logging import Formatter, FileHandler
@@ -78,6 +77,11 @@ def determine_earthquake():
 
     print(response_scoring.text)
     return str(json.loads(response_scoring.text))
+
+@app.route('/list', methods = ["GET", "POST"])
+def list():
+    info = request.get_json()
+    return render_template('list.html', info = info)
 
 @app.route('/address/', methods = ["GET", "POST"])
 def process_address():
@@ -157,8 +161,8 @@ def process_address():
             "score": _score,
             "price": prices[street] if street in prices and prices else 0
         })
-    final = jsonify(final)
-    return final
+    response = requests.post("http://127.0.0.1:5001/list", json = final)
+    return response
 
 # Error handlers.
 
