@@ -27,6 +27,4 @@ def get_address_price(address, city_state):
                 return ("error", "No price data found.")
         return (street, int(price))
 
-# address = input("Enter Address: ")
-# city_state = input("Enter city and state: ")
-print(get_address_price(address, city_state))
+print(get_address_price("14634 S Cairn Ave Compton", "Compton CA"))

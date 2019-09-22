@@ -9,6 +9,7 @@ from logging import Formatter, FileHandler
 from forms import *
 import os
 import json
+from property import get_address_price
 
 #----------------------------------------------------------------------------#
 # App Config.
@@ -30,23 +31,37 @@ def home():
 def process_address():
     data = json.loads(request.data)
     county = data['county']
+    city = data['city']
     state = data['state']
     address = data['address']
 
     # find score for county
     location = county + " , " + state
     score = store[location]["score"]
+    price = get_address_price(address, city + state)
     # find x neighboring counties, use the dmatrix
     from closest import closest_k
     closest_neighbors = closest_k(location)
-    scores = [store[neighbor]["score"] for neighbor in closest_neighbors]
+    from collections import OrderedDict
+    scores = OrderedDict()
+    for neighbor in closest_neighbors:
+        scores[neighbor] = store[neighbor]["score"]
     # query address for price
+    price = get_address_price(address, city + " " + state)
     # query all closest_neighbors for price
-    result = {
-        address:
+
+
+    result = OrderedDict()
+    result[address] = {
+        "score": score,
+        "price": price[1]
     }
-    price = 500
-    return jsonify([address, price, score, county, state]*10)
+    for neighbor, _score in zip(sorted(closest_neighbors, key=lambda x: scores[x]), scores.values()):
+        result[neighbor] = {}
+        result[neighbor]["score"] = _score
+        result[neighbor]["price"] = 100000
+
+    return jsonify(result)
 
 # Error handlers.
 
