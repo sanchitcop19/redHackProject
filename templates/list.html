@@ -63,39 +63,47 @@
       </tbody>
     </table>
     <script>
-      // Initialize and add the map
-      function initMap() {
-        // The location of Cali
-        var cali = { lat: 36.7783, lng: -119.4179 };
-        // The map, centered at Cali
-        var map = new google.maps.Map(document.getElementById("map"), {
-          zoom: 6,
-          center: cali
-        });
-        var data={{ anarghya|safe }};
-        var keys=Object.keys(data);
-        keys.forEach(function(key){
-          var coordinate= {lat:data[key][0],lng:data[key][1]};
-          var score=data[key][2];
-          if(score<=20){
-            var ico={
-              url:"http://maps.google.com/mapfiles/ms/icons/green-dot.png"
-            };
-          }else{
-            var ico={
-              url:"http://maps.google.com/mapfiles/ms/icons/red-dot.png"
-            };
+          // Initialize and add the map
+          function initMap() {
+            // The location of Cali
+            var cali = { lat: 36.7783, lng: -119.4179 };
+            // The map, centered at Cali
+            var map = new google.maps.Map(document.getElementById("map"), {
+              zoom: 6,
+              center: cali
+            });
+            var data={{ anarghya|safe }};
+            var keys=Object.keys(data);
+            keys.forEach(function(key){
+              var coordinate= {lat:data[key][0],lng:data[key][1]};
+              var score=data[key][2];
+              if(score<=20){
+                var ico={
+                  url:"http://maps.google.com/mapfiles/ms/icons/green-dot.png"
+                };
+              }else{
+                var ico={
+                  url:"http://maps.google.com/mapfiles/ms/icons/red-dot.png"
+                };
+              }
+              var marker= new google.maps.Marker({
+                position: coordinate,
+                map: map,
+                icon: ico
+              });
+              var infowindow =  new google.maps.InfoWindow({
+           	content: key,
+             });
+             marker.addListener('mouseout', function() {
+        infowindow.close();
+      });
+              marker.addListener('mouseover', function() {
+            infowindow.open(map, this);
+            });
+
+
+            });
           }
-          var marker= new google.maps.Marker({
-            position: coordinate,
-            map: map,
-            icon: ico
-          });
-          marker.addListener("click", function() {
-          alert(key);
-        });
-        });
-      }
     </script>
     <!--Load the API from the specified URL
     * The async attribute allows the browser to render the page while the API loads

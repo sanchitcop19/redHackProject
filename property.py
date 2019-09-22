@@ -14,7 +14,7 @@ def get_address_price(address, city_state):
     search_result = obj.SearchResults_searchresults
     error = int(search_result.message.code.cdata) != 0
     if error:
-        return ("error", search_result.message.text.cdata)
+        return search_result.message.text.cdata
     else:
         prices = search_result.response.results.result
         if isinstance(prices, list):
@@ -23,6 +23,6 @@ def get_address_price(address, city_state):
         else:
             price = prices.zestimate.amount.cdata
             street = prices.address.street.cdata
-            if len(price) is 0:
-                return ("error", "No price data found.")
+        if len(price) is 0:
+            price = "0"
         return (street, int(price))
