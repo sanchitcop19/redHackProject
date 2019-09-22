@@ -2,7 +2,7 @@
 # Imports
 #----------------------------------------------------------------------------#
 
-from flask import Flask, render_template, request, jsonify, url_for, redirect
+from flask import Flask, render_template, request, jsonify, url_for, redirect, make_response
 from forms import SearchForm
 import logging
 from logging import Formatter, FileHandler
@@ -77,11 +77,6 @@ def determine_earthquake():
 
     print(response_scoring.text)
     return str(json.loads(response_scoring.text))
-
-@app.route('/list', methods = ["GET", "POST"])
-def list():
-    info = request.get_json()
-    return render_template('list.html', info = info)
 
 @app.route('/address/', methods = ["GET", "POST"])
 def process_address():
@@ -159,10 +154,9 @@ def process_address():
         final.append({
             "street": street,
             "score": _score,
-            "price": prices[street] if street in prices and prices else 0
+            "price": round(prices[street]) if street in prices and prices else 0
         })
-    response = requests.post("http://127.0.0.1:5001/list", json = final)
-    return response
+    return render_template('list.html', info = final)
 
 # Error handlers.
 

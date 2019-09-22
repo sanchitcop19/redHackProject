@@ -1,3 +1,4 @@
+
 var Expand = (function() {
   var tile = $('.strips__strip');
   var tileLink = $('.strips__strip > .strip__content');
