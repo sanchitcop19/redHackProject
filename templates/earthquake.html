@@ -1,9 +1,22 @@
 <html>
     <head>
-        
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
     </head>
     <body>
+    <div class="text-center">
+        {% if score == 0 %}
+        <h2 style="color: green">EARTHQUAKE NOT LIKELY IN THE FUTURE</h2>
+        {% elif score == 1 %}
+        <h2 style="color: orange">EARTHQUAKE MIGHT OCCUR IN THE FUTURE</h2>
+        {% elif score == 2 %}
+        <h2 style="color: orange">EARTHQUAKE LIKELY IN THE FUTURE</h2>
+        {% elif score == 3 %}
+        <h2 style="color: red">EARTHQUAKE IMMINENT</h2>
+        {% endif %}
+    </div>
         <div style="display: None">
+
         {% for item in dates %}
         <div id="new_id_{{loop.index}}">{{item}}</div>
         <div id="id_{{loop.index}}">{{dates[item]}}</div> 

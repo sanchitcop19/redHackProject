@@ -83,27 +83,29 @@ def chart():
         elif data["mag"] > 6.5:
             x_vector[4] += 1
     value = "0"
-    if x_vector[1]>3:
-        return "1"
+    if x_vector[3] > 1:
+        value =  "3"
     elif x_vector[2] > 2:
-        return "2"
-    elif x_vector[3] > 1:
-        return "3"
-    ml_instance_id = "f84688e7-0454-4ca1-a25c-1af2172e6772"
-    iam_token = get_token()
-    # NOTE: generate iam_token and retrieve ml_instance_id based on provided documentation
-    header = {'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + iam_token, 'ML-Instance-ID': ml_instance_id}
+        value =  "2"
+    elif x_vector[1] > 3:
+        value = "1"
+    else:
 
-    # NOTE: manually define and pass the array(s) of values to be scored in the next line
-    payload_scoring = {"input_data": [
-        {"fields": ["0", "1", "2", "3", "4"], "values": [[18, 10, 1, 0, 1]]}]}
+        ml_instance_id = "f84688e7-0454-4ca1-a25c-1af2172e6772"
+        iam_token = get_token()
+        # NOTE: generate iam_token and retrieve ml_instance_id based on provided documentation
+        header = {'Content-Type': 'application/json',
+                  'Authorization': 'Bearer ' + iam_token, 'ML-Instance-ID': ml_instance_id}
 
-    response_scoring = requests.post(
-        'https://us-south.ml.cloud.ibm.com/v4/deployments/1d20095e-acdc-4c53-a82c-07daacf2e3d7/predictions', json=payload_scoring, headers=header)
+        # NOTE: manually define and pass the array(s) of values to be scored in the next line
+        payload_scoring = {"input_data": [
+            {"fields": ["0", "1", "2", "3", "4"], "values": [[18, 10, 1, 0, 1]]}]}
 
-    print(response_scoring.text)
-    value = json.loads(response_scoring.text)["predictions"][0]["values"][0][0]
+        response_scoring = requests.post(
+            'https://us-south.ml.cloud.ibm.com/v4/deployments/1d20095e-acdc-4c53-a82c-07daacf2e3d7/predictions', json=payload_scoring, headers=header)
+
+        print(response_scoring.text)
+        value = json.loads(response_scoring.text)["predictions"][0]["values"][0][0]
     data_map = {"1960": 0, "1970": 0, "1980": 0,
                 "1990": 0, "2000": 0, "2010": 0, "2020": 0}
     for data in earthquake_data["features"]:
@@ -128,7 +130,7 @@ def chart():
         else:
             data_map["2020"] += 1
 
-    return render_template("earthquake.html", dates=data_map)
+    return render_template("earthquake.html", dates=data_map, score = int(value))
 
 
 @app.route('/list', methods=["GET", "POST"])
@@ -180,7 +182,7 @@ def process_address():
     scores = ordered_scores
     # query address for price
     price = get_address_price(address, city + " " + state)
-    if price[0] == 'error':
+    if 'error' in price.lower():
         flash("Housing data could not be found. Please try a different house. ")
         return redirect(url_for('home'))
     # query all closest_neighbors for price
@@ -238,15 +240,6 @@ def process_address():
     return render_template('list.html', info=final, anarghya=anarghya)
 
 
-@app.errorhandler(500)
-def internal_error(error):
-    # db_session.rollback()
-    return render_template('errors/500.html'), 500
-
-
-@app.errorhandler(404)
-def not_found_error(error):
-    return render_template('errors/404.html'), 404
 
 
 if not app.debug:
