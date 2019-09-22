@@ -36,7 +36,7 @@
   </head>
   <body>
     <div id="map"></div>
-    <table class="table table-dark">
+    <table class="table table-dark table-responsive-sm">
       <thead>
         <tr>
           <th scope="col">Street</th>
@@ -46,7 +46,11 @@
       </thead>
       <tbody>
         {% for item in info %}
-        <tr>
+        {% if loop.index == 1 %}
+        <tr class="bg-success">
+        {% else %}
+            <tr>
+            {% endif %}
           <td>{{ item["street"] }}</td>
           <td>{{ item["price"] }}</td>
           <td>{{ item["score"] }}</td>

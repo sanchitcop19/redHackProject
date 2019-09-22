@@ -7,6 +7,8 @@ from forms import SearchForm
 import logging
 from logging import Formatter, FileHandler
 import os
+import locale
+locale.setlocale(locale.LC_ALL, '')
 import requests
 import json
 from datetime import datetime
@@ -154,6 +156,7 @@ def process_address():
             state = data["short_name"]
         if 'locality' in data["types"]:
             city = data["long_name"]
+    formatted_address = response['results'][0]['formatted_address']
     latitude = response["results"][0]["geometry"]["location"]["lat"]
     longitude = response["results"][0]["geometry"]["location"]["lng"]
     # find score for county
@@ -177,9 +180,9 @@ def process_address():
     # query all closest_neighbors for price
     final = []
     final.append({
-        "street": address,
+        "street": formatted_address,
         "score": main_score,
-        "price": price[1]
+        "price": locale.currency(price[1], grouping=True)
     })
     content = None
     prices = {}
@@ -210,11 +213,13 @@ def process_address():
             street = content[neighbor] if neighbor in content else ""
         else:
             street = address
-        final.append({
-            "street": street,
-            "score": _score,
-            "price": round(prices[street]) if street in prices and prices else 0
-        })
+        price = round(prices[street]) if street in prices and prices else 0
+        if price and street:
+            final.append({
+                "street": street,
+                "score": _score,
+                "price": locale.currency(price, grouping=True)
+            })
 
     return render_template('list.html', info = final)
 
