@@ -2,7 +2,7 @@
 # Imports
 #----------------------------------------------------------------------------#
 
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, url_for, redirect, make_response
 # from flask.ext.sqlalchemy import SQLAlchemy
 import logging
 from logging import Formatter, FileHandler
@@ -23,12 +23,16 @@ with open("scored_output.json") as file:
 with open("dmatrixca.json") as file:
     dmatrix = json.load(file)
 
-@app.route('/')
+@app.route('/', methods = ["GET", "POST"])
 def home():
-    return render_template('pages/placeholder.home.html')
+    form = SearchForm()
+    if form.validate_on_submit():
+        return make_response()
+    return render_template('index.html', form = form)
 
 @app.route('/address', methods = ["POST"])
 def process_address():
+    import pdb; pdb.set_trace()
     data = json.loads(request.data)
     county = data['county']
     city = data['city']
@@ -56,8 +60,6 @@ def process_address():
     # query address for price
     price = get_address_price(address, city + " " + state)
     # query all closest_neighbors for price
-
-
 
     final = []
     final.append({
@@ -134,7 +136,7 @@ if not app.debug:
 if __name__ == '__main__':
     import os
     print(os.getcwd())
-    app.run(port = 5002)
+    app.run(port = 5001)
 
 # Or specify port manually:
 '''

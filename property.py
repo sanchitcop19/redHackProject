@@ -26,5 +26,3 @@ def get_address_price(address, city_state):
             if len(price) is 0:
                 return ("error", "No price data found.")
         return (street, int(price))
-
-print(get_address_price("14634 S Cairn Ave Compton", "Compton CA"))
