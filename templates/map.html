@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      /* Set the size of the div element that contains the map */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script>
+      // Initialize and add the map
+      function initMap() {
+        // The location of Uluru
+        var america = { lat: 37.0902, lng: -95.7129 };
+        // The map, centered at Uluru
+        var map = new google.maps.Map(document.getElementById("map"), {
+          zoom: 5,
+          center: america
+        });
+        // The marker, positioned at Uluru
+        var marker = new google.maps.Marker({
+          position: america,
+          map: map,
+          icon: {
+            url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+          }
+        });
+
+        var marker1 = new google.maps.Marker({
+          position: { lat: 38.9072, lng: -77.0369 },
+          map: map,
+          icon: {
+            url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
+          }
+        });
+
+        var marker2 = new google.maps.Marker({
+          position: { lat: 40.7128, lng: -74.006 },
+          map: map,
+          icon: {
+            url: "http://maps.google.com/mapfiles/ms/icons/purple-dot.png"
+          }
+        });
+
+        marker.addListener("click", function() {
+          alert("Hello1!");
+        });
+        marker1.addListener("click", function() {
+          alert("Hello2!");
+        });
+        marker2.addListener("click", function() {
+          alert("Hello3!");
+        });
+      }
+    </script>
+    <!--Load the API from the specified URL
+    * The async attribute allows the browser to render the page while the API loads
+    * The key parameter will contain your own API key (which is not needed for this tutorial)
+    * The callback parameter executes the initMap() function
+    -->
+    <script
+      async
+      defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBYlrDFexF6L0TLdR_yWgplxeouaB0jQYI&callback=initMap"
+    ></script>
+  </body>
+</html>
