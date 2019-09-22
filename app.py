@@ -112,14 +112,11 @@ def process_address():
             city = data["long_name"]
     latitude = response["results"][0]["geometry"]["location"]["lat"]
     longitude = response["results"][0]["geometry"]["location"]["lng"]
-
     # find score for county
-
     location = county[:county.index(' County')] + " , " + state
     main_score = store[location]["score"]
     price = get_address_price(address, city + state)
     # find x neighboring counties, use the dmatrix
-
     from closest import closest_k
     closest_neighbors = closest_k(location)
     from collections import OrderedDict
@@ -134,7 +131,6 @@ def process_address():
     # query address for price
     price = get_address_price(address, city + " " + state)
     # query all closest_neighbors for price
-
     final = []
     final.append({
         "street": address,
@@ -146,14 +142,12 @@ def process_address():
     if state == "CA":
         with open("addresses.json") as file:
             content = json.load(file)
-
         import copy
         cn = copy.deepcopy(closest_neighbors)
         for i, n in enumerate(cn):
             cn[i] = n.replace(" ", "")
         cn = set(cn)
         for item, address in content.items():
-
             if item.replace(" ", "") not in cn:
                 continue
             try:
@@ -177,7 +171,6 @@ def process_address():
             "score": _score,
             "price": round(prices[street]) if street in prices and prices else 0
         })
-
     return render_template('list.html', info = final)
 
 # Error handlers.
