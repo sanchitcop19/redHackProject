@@ -36,10 +36,12 @@ def process_address():
     address = data['address']
 
     # find score for county
+
     location = county + " , " + state
     score = store[location]["score"]
     price = get_address_price(address, city + state)
     # find x neighboring counties, use the dmatrix
+
     from closest import closest_k
     closest_neighbors = closest_k(location)
     from collections import OrderedDict
@@ -47,8 +49,10 @@ def process_address():
     for neighbor in closest_neighbors:
         scores[neighbor] = store[neighbor]["score"]
     # query address for price
+
     price = get_address_price(address, city + " " + state)
     # query all closest_neighbors for price
+
 
 
     result = OrderedDict()
@@ -60,8 +64,8 @@ def process_address():
         result[neighbor] = {}
         result[neighbor]["score"] = _score
         result[neighbor]["price"] = 100000
-
-    return jsonify(result)
+    result = jsonify(result)
+    return result
 
 # Error handlers.
 
