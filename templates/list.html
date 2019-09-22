@@ -50,7 +50,7 @@
         {% else %}
             <tr>
             {% endif %}
-            <td><a href="{{ url_for('home') }}">{{ item["street"] }}</a></td>
+            <td><a href="{{ url_for('home') }}" class="street_links">{{ item["street"] }}</a></td>
           <td>{{ item["price"] }}</td>
           <td>{{ item["score"] }}</td>
         </tr>
