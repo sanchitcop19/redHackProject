@@ -55,6 +55,10 @@ def determine_earthquake():
             x_vector[3]+=1
         elif data["mag"]>6.5:
             x_vector[4]+=1
+    if x_vector[2]>3:
+        return "2"
+    if x_vector[3]>1:
+        return "3"
     ml_instance_id = "f84688e7-0454-4ca1-a25c-1af2172e6772"
     iam_token = "eyJraWQiOiIyMDE5MDUxMyIsImFsZyI6IlJTMjU2In0.eyJpYW1faWQiOiJpYW0tU2VydmljZUlkLWU5YWVlYzhmLTNiOTQtNDQ5NC04ZTE0LTI1YjdiNDAzZDg3MiIsImlkIjoiaWFtLVNlcnZpY2VJZC1lOWFlZWM4Zi0zYjk0LTQ0OTQtOGUxNC0yNWI3YjQwM2Q4NzIiLCJyZWFsbWlkIjoiaWFtIiwiaWRlbnRpZmllciI6IlNlcnZpY2VJZC1lOWFlZWM4Zi0zYjk0LTQ0OTQtOGUxNC0yNWI3YjQwM2Q4NzIiLCJzdWIiOiJTZXJ2aWNlSWQtZTlhZWVjOGYtM2I5NC00NDk0LThlMTQtMjViN2I0MDNkODcyIiwic3ViX3R5cGUiOiJTZXJ2aWNlSWQiLCJhY2NvdW50Ijp7InZhbGlkIjp0cnVlLCJic3MiOiI3NjE4ZGJlNjcxYzY0OTk3YmU3ZTkzMzU3Zjg3NjEzMyJ9LCJpYXQiOjE1NjkxMTEzNTcsImV4cCI6MTU2OTExNDk1NywiaXNzIjoiaHR0cHM6Ly9pYW0ubmcuYmx1ZW1peC5uZXQvb2lkYy90b2tlbiIsImdyYW50X3R5cGUiOiJ1cm46aWJtOnBhcmFtczpvYXV0aDpncmFudC10eXBlOmFwaWtleSIsInNjb3BlIjoiaWJtIG9wZW5pZCIsImNsaWVudF9pZCI6ImJ4IiwiYWNyIjoxLCJhbXIiOlsicHdkIl19.Ebiu1ISGAHEdV48HGN_ByTgXNkXC_PZ-JsnxoawIGB_zwF307CGMTfZ3WnuSl1A3Xs00KF-0oy5xVZ1iVPaduEorEgjY0gvzXGcA3UPXkaBQ8lqFsERUJgNRVkdOm5XbhYgsl2uSRsPNLj9px1gy9hsUnyYQpcKl6ywwnmIr3KHYzB1WQCOMiMEcQ-aAikjRVDYtNmjoWQf6NGG23r7rpl2bb4c2g_-q0-XehAuK_uBaDbZd1rAVdkgV7ac1-84cwjNmXNZ-7vOMWpFywgUSIlhBkt-TWJPCU8-5_lrmf6hwKJqDfefDyLCtjO30Iv1Lk29iuYPM_xBJqCVfG67rxQ"
     # NOTE: generate iam_token and retrieve ml_instance_id based on provided documentation	
