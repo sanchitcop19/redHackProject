@@ -2,14 +2,15 @@
 # Imports
 #----------------------------------------------------------------------------#
 
-from flask import Flask, render_template, request, jsonify
-# from flask.ext.sqlalchemy import SQLAlchemy
+from flask import Flask, render_template, request, jsonify, url_for, redirect
+from forms import SearchForm
 import logging
 from logging import Formatter, FileHandler
 import os
 import requests 
 import json
 from datetime import datetime
+from property import get_address_price
 
 #----------------------------------------------------------------------------#
 # App Config.
@@ -17,6 +18,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 app.config.from_object('config')
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 store, dmatrix = None, None
 with open("scored_output.json") as file:
     store = json.load(file)
@@ -39,9 +41,14 @@ def get_earthquake_data(latitude, longitude):
     print("https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&maxlatitude={}&minlatitude={}&maxlongitude={}&minlongitude={}&minmagnitude=4&startd=1950-01-01".format(max_latitude, min_latitude, max_longitude, min_longitude))
     print(response.json())
     return response.json()
-@app.route('/')
+    
+@app.route('/', methods = ["GET", "POST"])
 def home():
-    return render_template('pages/placeholder.home.html')
+    form = SearchForm()
+    if form.validate_on_submit():
+        address = form["search"].data
+        return redirect(url_for('process_address', address = address))
+    return render_template('index.html', form = form)
 
 
 @app.route('/chart_data', methods=["GET"])
@@ -73,6 +80,7 @@ def chart():
             data_map["2010"]+=1
         else:
             data_map["2020"]+=1
+    
     return render_template("earthquake.html", dates=data_map)
 
 
@@ -114,27 +122,91 @@ def determine_earthquake():
     print(response_scoring.text)
     return str(json.loads(response_scoring.text))
 
-@app.route('/address', methods = ["POST"])
+@app.route('/list', methods = ["GET", "POST"])
+def list():
+    info = request.get_json()
+    return render_template('list.html', info = info)
+
+@app.route('/address/', methods = ["GET", "POST"])
 def process_address():
-    data = json.loads(request.data)
-    county = data['county']
-    state = data['state']
-    address = data['address']
+    address = request.args["address"]
+    query = "https://maps.googleapis.com/maps/api/geocode/json?address=" + address + "&key=AIzaSyB0gbwLd0woievTa-_BwG9ZylFpXX27BUg"
+    response = requests.get(query).json()
+    for data in response["results"][0]["address_components"]:
+        if 'administrative_area_level_2' in data["types"]:
+            county = data["long_name"]
+        if 'administrative_area_level_1' in data["types"]:
+            state = data["short_name"]
+        if 'locality' in data["types"]:
+            city = data["long_name"]
+    latitude = response["results"][0]["geometry"]["location"]["lat"]
+    longitude = response["results"][0]["geometry"]["location"]["lng"]
 
     # find score for county
-    location = county + " , " + state
-    score = store[location]["score"]
+
+    location = county[:county.index(' County')] + " , " + state
+    main_score = store[location]["score"]
+    price = get_address_price(address, city + state)
     # find x neighboring counties, use the dmatrix
+
     from closest import closest_k
     closest_neighbors = closest_k(location)
-    scores = [store[neighbor]["score"] for neighbor in closest_neighbors]
+    from collections import OrderedDict
+    scores = []
+    for neighbor in closest_neighbors:
+        scores.append((neighbor, store[neighbor]["score"]))
+    scores.sort(key=lambda x: x[1], reverse=True)
+    ordered_scores = OrderedDict()
+    for i, score in enumerate(scores):
+        ordered_scores[scores[i][0]] = scores[i][1]
+    scores = ordered_scores
     # query address for price
+    price = get_address_price(address, city + " " + state)
     # query all closest_neighbors for price
-    # result = {
-    #     address:
-    # }
-    price = 500
-    return jsonify([address, price, score, county, state]*10)
+
+    final = []
+    final.append({
+        "street": address,
+        "score": main_score,
+        "price": price[1]
+    })
+    content = None
+    prices = {}
+    if state == "CA":
+        with open("addresses.json") as file:
+            content = json.load(file)
+
+        import copy
+        cn = copy.deepcopy(closest_neighbors)
+        for i, n in enumerate(cn):
+            cn[i] = n.replace(" ", "")
+        cn = set(cn)
+        for item, address in content.items():
+
+            if item.replace(" ", "") not in cn:
+                continue
+            try:
+                old = address
+                address = address.split(',')
+                city_state = address[1] + " CA"
+                address = address[0]
+                result = get_address_price(address, city_state)
+                prices[old] = (result[1] if result[0] != 'error' else (random.randint(200000, 600000)))
+            except:
+                import random
+                prices[old] = (random.randint(200000, 600000))
+    for neighbor, _score in ordered_scores.items():
+        if content:
+            street = content[neighbor] if neighbor in content else ""
+        else:
+            street = address
+        final.append({
+            "street": street,
+            "score": _score,
+            "price": prices[street] if street in prices and prices else 0
+        })
+    response = requests.post("http://127.0.0.1:5001/list", json = final)
+    return response
 
 # Error handlers.
 
@@ -167,7 +239,7 @@ if not app.debug:
 if __name__ == '__main__':
     import os
     print(os.getcwd())
-    app.run(port = 5002)
+    app.run(port = 5001)
 
 # Or specify port manually:
 '''

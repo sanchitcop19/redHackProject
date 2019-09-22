@@ -26,7 +26,3 @@ def get_address_price(address, city_state):
             if len(price) is 0:
                 return ("error", "No price data found.")
         return (street, int(price))
-
-# address = input("Enter Address: ")
-# city_state = input("Enter city and state: ")
-print(get_address_price(address, city_state))
