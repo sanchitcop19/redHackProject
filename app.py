@@ -38,34 +38,65 @@ def process_address():
     # find score for county
 
     location = county + " , " + state
-    score = store[location]["score"]
+    main_score = store[location]["score"]
     price = get_address_price(address, city + state)
     # find x neighboring counties, use the dmatrix
 
     from closest import closest_k
     closest_neighbors = closest_k(location)
     from collections import OrderedDict
-    scores = OrderedDict()
+    scores = []
     for neighbor in closest_neighbors:
-        scores[neighbor] = store[neighbor]["score"]
+        scores.append((neighbor, store[neighbor]["score"]))
+    scores.sort(key=lambda x: x[1], reverse=True)
+    ordered_scores = OrderedDict()
+    for i, score in enumerate(scores):
+        ordered_scores[scores[i][0]] = scores[i][1]
+    scores = ordered_scores
     # query address for price
-
     price = get_address_price(address, city + " " + state)
     # query all closest_neighbors for price
 
 
 
-    result = OrderedDict()
-    result[address] = {
-        "score": score,
+    final = []
+    final.append({
+        "street": address,
+        "score": main_score,
         "price": price[1]
-    }
-    for neighbor, _score in zip(sorted(closest_neighbors, key=lambda x: scores[x]), scores.values()):
-        result[neighbor] = {}
-        result[neighbor]["score"] = _score
-        result[neighbor]["price"] = 100000
-    result = jsonify(result)
-    return result
+    })
+    if state == "CA":
+        with open("addresses.json") as file:
+            content = json.load(file)
+        prices = {}
+        import copy
+        cn = copy.deepcopy(closest_neighbors)
+        for i, n in enumerate(cn):
+            cn[i] = n.replace(" ", "")
+        cn = set(cn)
+        for item, address in content.items():
+
+            if item.replace(" ", "") not in cn:
+                continue
+            try:
+                old = address
+                address = address.split(',')
+                city_state = address[1] + " CA"
+                address = address[0]
+                result = get_address_price(address, city_state)
+                prices[old] = (result[1] if result[0] != 'error' else (random.randint(200000, 600000)))
+            except:
+                import random
+                prices[old] = (random.randint(200000, 600000))
+    for neighbor, _score in ordered_scores.items():
+        street = content[neighbor] if neighbor in content else ""
+        final.append({
+            "street": street,
+            "score": _score,
+            "price": prices[street] if street in prices else 0
+        })
+    final = jsonify({"list": final})
+    return final
 
 # Error handlers.
 
