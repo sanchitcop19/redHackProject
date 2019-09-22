@@ -2,12 +2,12 @@
 # Imports
 #----------------------------------------------------------------------------#
 
-from flask import Flask, render_template, request, jsonify, url_for, redirect
+from flask import Flask, render_template, request, jsonify, url_for, redirect, make_response
 from forms import SearchForm
 import logging
 from logging import Formatter, FileHandler
 import os
-import requests 
+import requests
 import json
 from datetime import datetime
 from property import get_address_price
@@ -43,12 +43,20 @@ def get_earthquake_data(latitude, longitude):
     return response.json()
     
 @app.route('/', methods = ["GET", "POST"])
+
+@app.route('/map')
+def map():
+    return render_template("map.html")
+
+
+@app.route('/', methods=["GET", "POST"])
 def home():
     form = SearchForm()
     if form.validate_on_submit():
         address = form["search"].data
-        return redirect(url_for('process_address', address = address))
-    return render_template('index.html', form = form)
+        return redirect(url_for('process_address', address=address))
+    return render_template('index.html', form=form)
+
 
 
 @app.route('/chart_data', methods=["GET"])
@@ -95,42 +103,48 @@ def determine_earthquake():
         data = data["properties"]
         if not data['mag']:
             continue
-        if 4.5 < data["mag"] <5:
-            x_vector[0]+=1
-        elif 5 < data["mag"] <5.5:
-            x_vector[1]+=1
-        elif 5.5 < data["mag"] <6:
-            x_vector[2]+=1
+        if 4.5 < data["mag"] < 5:
+            x_vector[0] += 1
+        elif 5 < data["mag"] < 5.5:
+            x_vector[1] += 1
+        elif 5.5 < data["mag"] < 6:
+            x_vector[2] += 1
         elif 6 < data["mag"] < 6.5:
-            x_vector[3]+=1
-        elif data["mag"]>6.5:
-            x_vector[4]+=1
-    if x_vector[2]>3:
+            x_vector[3] += 1
+        elif data["mag"] > 6.5:
+            x_vector[4] += 1
+    if x_vector[2] > 3:
         return "2"
-    if x_vector[3]>1:
+    if x_vector[3] > 1:
         return "3"
     ml_instance_id = "f84688e7-0454-4ca1-a25c-1af2172e6772"
     iam_token = "eyJraWQiOiIyMDE5MDUxMyIsImFsZyI6IlJTMjU2In0.eyJpYW1faWQiOiJpYW0tU2VydmljZUlkLWU5YWVlYzhmLTNiOTQtNDQ5NC04ZTE0LTI1YjdiNDAzZDg3MiIsImlkIjoiaWFtLVNlcnZpY2VJZC1lOWFlZWM4Zi0zYjk0LTQ0OTQtOGUxNC0yNWI3YjQwM2Q4NzIiLCJyZWFsbWlkIjoiaWFtIiwiaWRlbnRpZmllciI6IlNlcnZpY2VJZC1lOWFlZWM4Zi0zYjk0LTQ0OTQtOGUxNC0yNWI3YjQwM2Q4NzIiLCJzdWIiOiJTZXJ2aWNlSWQtZTlhZWVjOGYtM2I5NC00NDk0LThlMTQtMjViN2I0MDNkODcyIiwic3ViX3R5cGUiOiJTZXJ2aWNlSWQiLCJhY2NvdW50Ijp7InZhbGlkIjp0cnVlLCJic3MiOiI3NjE4ZGJlNjcxYzY0OTk3YmU3ZTkzMzU3Zjg3NjEzMyJ9LCJpYXQiOjE1NjkxMTEzNTcsImV4cCI6MTU2OTExNDk1NywiaXNzIjoiaHR0cHM6Ly9pYW0ubmcuYmx1ZW1peC5uZXQvb2lkYy90b2tlbiIsImdyYW50X3R5cGUiOiJ1cm46aWJtOnBhcmFtczpvYXV0aDpncmFudC10eXBlOmFwaWtleSIsInNjb3BlIjoiaWJtIG9wZW5pZCIsImNsaWVudF9pZCI6ImJ4IiwiYWNyIjoxLCJhbXIiOlsicHdkIl19.Ebiu1ISGAHEdV48HGN_ByTgXNkXC_PZ-JsnxoawIGB_zwF307CGMTfZ3WnuSl1A3Xs00KF-0oy5xVZ1iVPaduEorEgjY0gvzXGcA3UPXkaBQ8lqFsERUJgNRVkdOm5XbhYgsl2uSRsPNLj9px1gy9hsUnyYQpcKl6ywwnmIr3KHYzB1WQCOMiMEcQ-aAikjRVDYtNmjoWQf6NGG23r7rpl2bb4c2g_-q0-XehAuK_uBaDbZd1rAVdkgV7ac1-84cwjNmXNZ-7vOMWpFywgUSIlhBkt-TWJPCU8-5_lrmf6hwKJqDfefDyLCtjO30Iv1Lk29iuYPM_xBJqCVfG67rxQ"
-    # NOTE: generate iam_token and retrieve ml_instance_id based on provided documentation	
-    header = {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + iam_token, 'ML-Instance-ID': ml_instance_id}
+    # NOTE: generate iam_token and retrieve ml_instance_id based on provided documentation
+    header = {'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + iam_token, 'ML-Instance-ID': ml_instance_id}
 
     # NOTE: manually define and pass the array(s) of values to be scored in the next line
-    payload_scoring = {"input_data": [{"fields": ["0", "1", "2", "3", "4"], "values": [[18,10,1,0,1]]}]}
+    payload_scoring = {"input_data": [
+        {"fields": ["0", "1", "2", "3", "4"], "values": [[18, 10, 1, 0, 1]]}]}
 
-    response_scoring = requests.post('https://us-south.ml.cloud.ibm.com/v4/deployments/1d20095e-acdc-4c53-a82c-07daacf2e3d7/predictions', json=payload_scoring, headers=header)
+    response_scoring = requests.post(
+        'https://us-south.ml.cloud.ibm.com/v4/deployments/1d20095e-acdc-4c53-a82c-07daacf2e3d7/predictions', json=payload_scoring, headers=header)
 
     print(response_scoring.text)
     return str(json.loads(response_scoring.text))
 
-@app.route('/list', methods = ["GET", "POST"])
+
+@app.route('/list', methods=["GET", "POST"])
 def list():
     info = request.get_json()
-    return render_template('list.html', info = info)
+    return render_template('list.html', info=info)
 
-@app.route('/address/', methods = ["GET", "POST"])
+
+@app.route('/address/', methods=["GET", "POST"])
 def process_address():
     address = request.args["address"]
-    query = "https://maps.googleapis.com/maps/api/geocode/json?address=" + address + "&key=AIzaSyB0gbwLd0woievTa-_BwG9ZylFpXX27BUg"
+    query = "https://maps.googleapis.com/maps/api/geocode/json?address=" + \
+        address + "&key=AIzaSyB0gbwLd0woievTa-_BwG9ZylFpXX27BUg"
     response = requests.get(query).json()
     for data in response["results"][0]["address_components"]:
         if 'administrative_area_level_2' in data["types"]:
@@ -191,7 +205,8 @@ def process_address():
                 city_state = address[1] + " CA"
                 address = address[0]
                 result = get_address_price(address, city_state)
-                prices[old] = (result[1] if result[0] != 'error' else (random.randint(200000, 600000)))
+                prices[old] = (result[1] if result[0] != 'error' else (
+                    random.randint(200000, 600000)))
             except:
                 import random
                 prices[old] = (random.randint(200000, 600000))
@@ -203,17 +218,17 @@ def process_address():
         final.append({
             "street": street,
             "score": _score,
-            "price": prices[street] if street in prices and prices else 0
+            "price": round(prices[street]) if street in prices and prices else 0
         })
-    response = requests.post("http://127.0.0.1:5001/list", json = final)
-    return response
+
+    return render_template('list.html', info = final)
 
 # Error handlers.
 
 
 @app.errorhandler(500)
 def internal_error(error):
-    #db_session.rollback()
+    # db_session.rollback()
     return render_template('errors/500.html'), 500
 
 
@@ -221,10 +236,12 @@ def internal_error(error):
 def not_found_error(error):
     return render_template('errors/404.html'), 404
 
+
 if not app.debug:
     file_handler = FileHandler('error.log')
     file_handler.setFormatter(
-        Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]')
+        Formatter(
+            '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]')
     )
     app.logger.setLevel(logging.INFO)
     file_handler.setLevel(logging.INFO)
@@ -239,7 +256,7 @@ if not app.debug:
 if __name__ == '__main__':
     import os
     print(os.getcwd())
-    app.run(port = 5001)
+    app.run(port=5001)
 
 # Or specify port manually:
 '''

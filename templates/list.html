@@ -1,7 +1,26 @@
 {% extends "base.html" %}
 {% block head %}
     {{ super() }}
+
+
 {% endblock %}
 {% block content %}
-{{ info }}
+<table class="table table-dark">
+  <thead>
+    <tr>
+      <th scope="col">Street</th>
+      <th scope="col">Price Estimate</th>
+      <th scope="col">Natural Hazard Score</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for item in info %}
+    <tr>
+      <td>{{ item["street"] }}</td>
+      <td>{{ item["price"] }}</td>
+      <td>{{ item["score"] }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
 {% endblock %}

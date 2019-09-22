@@ -2,3 +2,4 @@ venv/
 .idea/
 ngrok
 .vscode
+__pycache__
