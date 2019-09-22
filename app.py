@@ -2,7 +2,7 @@
 # Imports
 #----------------------------------------------------------------------------#
 
-from flask import Flask, render_template, request, jsonify, url_for, redirect, make_response
+from flask import Flask, render_template, request, jsonify, url_for, redirect, flash
 from forms import SearchForm
 import logging
 from logging import Formatter, FileHandler
@@ -177,11 +177,14 @@ def process_address():
     scores = ordered_scores
     # query address for price
     price = get_address_price(address, city + " " + state)
+    if price[0] == 'error':
+        flash("Housing data could not be found. Please try a different house. ")
+        return redirect(url_for('home'))
     # query all closest_neighbors for price
     final = []
     final.append({
         "street": formatted_address,
-        "score": main_score,
+        "score": round(main_score, 2),
         "price": locale.currency(price[1], grouping=True)
     })
     content = None
@@ -217,7 +220,7 @@ def process_address():
         if price and street:
             final.append({
                 "street": street,
-                "score": _score,
+                "score": round(_score, 2),
                 "price": locale.currency(price, grouping=True)
             })
 

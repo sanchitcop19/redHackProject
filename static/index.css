@@ -78,10 +78,11 @@ h4{
 
 #flashed_messages{
     position: absolute;
-    z-index: 3;
-    color: #FFF;
+    z-index: 7;
+    color: #F00;
     list-style-type: none;
     font-weight: bold;
+    top: 2%;
 }
 
 .strips {
