@@ -4,6 +4,7 @@
 
 from flask import Flask, render_template, request, jsonify, url_for, redirect, make_response
 # from flask.ext.sqlalchemy import SQLAlchemy
+from forms import SearchForm
 import logging
 from logging import Formatter, FileHandler
 import os
@@ -17,6 +18,7 @@ from property import get_address_price
 
 app = Flask(__name__)
 app.config.from_object('config')
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 store, dmatrix = None, None
 with open("scored_output.json") as file:
     store = json.load(file)
@@ -27,7 +29,8 @@ with open("dmatrixca.json") as file:
 def home():
     form = SearchForm()
     if form.validate_on_submit():
-        return make_response()
+        address = form["search"].data
+        return redirect(url_for('process_address', address = address))
     return render_template('index.html', form = form)
 
 @app.route('/earthquake', methods=["POST"])
@@ -76,18 +79,24 @@ def determine_earthquake():
     print(response_scoring.text)
     return str(json.loads(response_scoring.text))
 
-@app.route('/address', methods = ["POST"])
+@app.route('/address/', methods = ["GET", "POST"])
 def process_address():
-    import pdb; pdb.set_trace()
-    data = json.loads(request.data)
-    county = data['county']
-    city = data['city']
-    state = data['state']
-    address = data['address']
+    address = request.args["address"]
+    query = "https://maps.googleapis.com/maps/api/geocode/json?address=" + address + "&key=AIzaSyB0gbwLd0woievTa-_BwG9ZylFpXX27BUg"
+    response = requests.get(query).json()
+    for data in response["results"][0]["address_components"]:
+        if 'administrative_area_level_2' in data["types"]:
+            county = data["long_name"]
+        if 'administrative_area_level_1' in data["types"]:
+            state = data["short_name"]
+        if 'locality' in data["types"]:
+            city = data["long_name"]
+    latitude = response["results"][0]["geometry"]["location"]["lat"]
+    longitude = response["results"][0]["geometry"]["location"]["lng"]
 
     # find score for county
 
-    location = county + " , " + state
+    location = county[:county.index(' County')] + " , " + state
     main_score = store[location]["score"]
     price = get_address_price(address, city + state)
     # find x neighboring counties, use the dmatrix
